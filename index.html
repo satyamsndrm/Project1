@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+<style type="text/css">
+.title{
+	font-weight: 800;
+	font-size: 22px;
+	text-align: center;
+}
+.header{
+	height:100px;
+	background-color: darkgreen;
+	width:100%;
+	font-weight: 800;
+	text-align: center;
+	margin-bottom: 22px;
+}
+.header h1{
+	font-size: 50px;
+	text-align: center;
+	vertical-align: center;
+	margin:auto;
+	padding-top: 22px;
+	color: black;
+}
+.qabox{
+	margin-bottom: :22px;
+	padding-bottom: 22px;
+}
+.que,.ans{
+	font-size: 24px;
+}
+li{
+	font-size: 20px;
+}
+#right-content{
+	padding-bottom: 22px;
+}
+.col-md-3 , .col-md-8{
+	border:2px solid black;
+}
+.col-md-8{
+	height: :100%;
+}
+table , td ,tr{
+	border: 7px solid darkgreen;
+}
+#table-data{
+	margin: auto;
+	padding: auto;
+}
+#login-box, #signup-box{
+	border: 7px solid darkgreen;
+	padding:33px;
+}
+#form-for-subject , #form-for-grades , #form-for-chapter, #form-for-qa{
+	border: 4px solid darkgreen;
+	padding: 20px;
+	margin-top: 22px;
+}
+#input-forms{
+	margin-top: 22px;
+	padding: 22px;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="bootstrap.min.js"></script>
+<script type="text/javascript">
+	var LoginData=[];
+	var isLoggedIn = false;
+	var globalData=[];
+	$.ajax({
+			url	:	"json.txt",
+			success	:	function(data){
+				globalData = JSON.parse(data);
+			}
+		});
+
+	$.fn.showContent = function(msg) {
+		var r='';
+		var code= $(this).attr('qcode');
+		if(code==undefined){
+			code="0_0_0";
+		}
+		var num = code.split('_');
+		i = num[0] ; j=num[1] ; k=num[2];
+		d= globalData;
+		for(x=0; x<d.gradesList[i].subjectList[j].chapterList[k].questionList.length; x++){
+			r+= "<div class='qabox'><div class='que'><strong>Que:- </strong>"+d.gradesList[num[0]].subjectList[num[1]].chapterList[num[2]].questionList[x].question.trim('"')+"</div>";
+			r+= "<div class='ans'><strong>Ans:- </strong>"+d.gradesList[num[0]].subjectList[num[1]].chapterList[num[2]].questionList[x].answer.trim('"')+"</div></div>";
+		}
+		$("#right-content").html(r);
+    }
+
+	$(document).ready(function(){
+
+		$("#login-div").hide();
+		$("#table-data").hide();
+		$("#input-forms").hide();
+
+
+		checkLogin(isLoggedIn);
+		LeftSidebar(globalData);
+		showSubject(globalData);
+		showGrade(globalData);
+		showChapter(globalData);
+
+		function showGrade(d) {
+			var s='<option class="form-control" value="">Select Grade Name</option>';
+			for(var i=0; i<d.gradesList.length; i++){
+				s+= "<option value='"+i+"'>"+d.gradesList[i].name+"</option>";
+			}
+			$("select#gradelist").html(s);
+		}
+
+		function showSubject(d) {
+			var s='<option class="form-control" value="">Select Subject Name</option>';
+			for(var i=0; i<d.gradesList.length; i++){
+				for(var j=0; j<d.gradesList[i].subjectList.length; j++){
+					s+= "<option value='"+i+"_"+j+"'>"+d.gradesList[i].subjectList[j].name+"</option>";
+				}
+			}
+			$("select#subjectlist").html(s);
+		}
+
+		function showChapter(d) {
+			var s='<option class="form-control" value="">Select Chapter Name</option>';
+			for(var i=0; i<d.gradesList.length; i++){
+				for(var j=0; j<d.gradesList[i].subjectList.length; j++){
+					for(var k=0; k<d.gradesList[i].subjectList[j].chapterList.length; k++){
+						s+= "<option value='"+i+"_"+j+"_"+k+"'>"+d.gradesList[i].subjectList[j].chapterList[k].name+"</option>";
+					}
+				}
+			}
+			$("select#chapterlist").html(s);
+		}
+
+		function checkLogin (isLoggedIn) {
+			if(isLoggedIn){
+				$("#table-data").show();
+				$("#login-div").hide();
+				$("#input-forms").show();
+				$().showContent();
+			}else{
+				$("#login-div").show();
+			}
+		}
+
+		function LeftSidebar(k){
+			var i=0;
+			d = k;
+			a= "<ul>";
+			for(i=0; i<d.gradesList.length; i++){
+				a+= "<li>"+d.gradesList[i].name+"</li>";
+				
+				for(j=0; j<d.gradesList[i].subjectList.length; j++){
+					if(j==0){
+						a+= "<ul><li>"+d.gradesList[i].subjectList[j].name+"</li>";
+					}else{
+						a+= "<li>"+d.gradesList[i].subjectList[j].name+"</li>";
+					}
+					
+					for(k=0; k<d.gradesList[i].subjectList[j].chapterList.length; k++){
+						q_code = i+"_"+j+"_"+k;
+
+						if(k==0){
+							a+= "<ul class='aaa'><li id='show_content' qcode='"+q_code+"' onClick='$(this).showContent();'>"+d.gradesList[i].subjectList[j].chapterList[k].name+"</li>";
+						}else{
+							a+= "<li><a class='show_content' qcode='"+q_code+"'>"+d.gradesList[i].subjectList[j].chapterList[k].name+"</a></li>";
+						}
+					}
+					a+="</ul>";
+				}
+				a+="</ul>";
+			}
+			$("div#left-content").html(a);
+		}
+
+		$("#login-form #action").on("click" , function(e){
+			e.preventDefault();
+			var id=$("#login-form #userID").val();
+			var password=$("#login-form #pwd").val();
+			for(var q=0;q<LoginData.length; q++){
+				if(LoginData[q].id==id && LoginData[q].password==password){
+					isLoggedIn=true;
+					checkLogin(isLoggedIn);
+					return true;
+				}
+			}
+
+			alert('Unknown userID or password.')
+		});
+
+		$("#signup-form #actions").on("click" , function(e){
+			e.preventDefault();
+
+			var id=$("#signup-form #userIDs").val();
+			var password=$("#signup-form #pwds").val();
+			for(var q=0;q<LoginData.length; q++){
+				if(LoginData[q].id==id){
+					alert('Already registered');
+					return true;
+				}
+			}
+			var newuser= { id:id , password:password};
+			LoginData.push(newuser);
+			alert('Successfully Registered');
+		});
+
+		$("#form-for-grades #add_grades").on("click" , function(e){
+			e.preventDefault();
+			var gname = $("#gname").val();
+			var toput ={'name':gname , 'subjectList':[]};
+			for(var x = 0 ; x<globalData.gradesList.length ; x++){
+				if(globalData.gradesList[x].name==gname || gname==''){
+					alert('Grade is Already in the data');
+					return true;
+				}
+			}
+			globalData.gradesList.push(toput);
+			showGrade(globalData);
+			LeftSidebar(globalData);
+		});
+
+
+		$("#form-for-subject #add_subject").on("click" , function(e){
+			e.preventDefault();
+			var sname = $("#sname").val();
+			var index = $("#gradelist").val();
+			var toput ={'name':sname , 'chapterList':[]};
+			if(sname =='' || index==''){
+				alert('Invalid Input');
+				return true;
+			}
+			var x = index;
+			for(var y=0 ; y<globalData.gradesList[x].subjectList.length ; y++){
+				if(globalData.gradesList[x].subjectList[y].name==sname){
+					alert('Subject is Already in the data');
+					return true;
+				}
+			}
+			globalData.gradesList[x].subjectList.push(toput);
+			showSubject(globalData);
+			LeftSidebar(globalData);
+		});
+
+		$("#form-for-chapter #add_chapter").on("click" , function(e){
+			e.preventDefault();
+			var cname = $("#cname").val();
+			var index = $("#subjectlist").val();
+			var num = index.split('_');
+			var toput ={'name':cname , 'questionList':[]};
+			if(cname =='' || index==''){
+				alert('Invalid Input');
+				return true;
+			}
+			var x =num[0];
+			var y = num[1];
+			for(var z=0 ; z<globalData.gradesList[x].subjectList[y].chapterList.length ; z++){
+				if(globalData.gradesList[x].subjectList[y].chapterList[z].name==sname){
+					alert('Chapter is Already in the data');
+					return true;
+				}
+			}
+				
+			globalData.gradesList[x].subjectList[y].chapterList.push(toput);
+			showChapter(globalData);
+			LeftSidebar(globalData);
+		});
+
+		$("#form-for-qa #add_qa").on("click" , function(e){
+			e.preventDefault();
+			var que = $("#que").val();
+			var ans = $("#ans").val();
+			var index = $("#chapterlist").val();
+			var num = index.split('_');
+			var toput ={'question':que  , 'answer':ans};
+			if(que =='' || index=='' || ans==''){
+				alert('Invalid Input');
+				return true;
+			}
+			globalData.gradesList[num[0]].subjectList[num[1]].chapterList[num[2]].questionList.push(toput);
+			$().showContent();
+		});
+
+
+});
+</script>
+
+</head>
+<body>
+<div class="header">
+	<h1>Welcome</h1>
+</div>
+<div id="login-div">
+	<div class="row">
+		<div class="col-md-offset-1 col-md-4" id="login-box">
+			<form class="form-horizontal" id="login-form">
+				<h3 class="title">LogIN Here</h3>
+				<div class="form-group">
+					<label for="userID" class="control-label col-sm-3">UserId</label>
+					<div class="col-sm-8">
+						<input class="form-control" type="text" id="userID" value="">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="pwd" class="control-label col-sm-3">Password</label>
+					<div class="col-sm-8">
+						<input class="form-control" type="password" id="pwd" value="">
+					</div>
+				</div>
+				<div class="col-sm-offset-3 col-sm-4">
+					<input class="form-control btn btn-primary" type="submit" id="action" value="LogIn">
+				</div>
+			</form>
+		</div>
+		<div class="col-md-offset-2 col-md-4" id="signup-box">
+			<form class="form-horizontal" id="signup-form">
+				<h3 class="title">SignUP Here</h3>
+				<div class="form-group">
+					<label for="userIDs" class="control-label col-sm-3">UserId</label>
+					<div class="col-sm-8">
+						<input class="form-control" type="text" id="userIDs" value="">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="pwd" class="control-label col-sm-3">Password</label>
+					<div class="col-sm-8">
+						<input class="form-control" type="password" id="pwds" value="">
+					</div>
+				</div>
+				<div class="col-sm-offset-3 col-sm-4">
+					<input class="form-control btn btn-primary" type="submit" id="actions" value="SignUP">
+				</div>
+			</form>
+		</div>
+
+	</div>
+</div>
+
+<div id="container">
+	<table class="table" id="table-data">
+		<tr>
+			<td width="33%">
+				<h3 class="title">Content</h3>
+				<div id="left-content"></div>
+			</td>
+			<td width="66%">
+				<h3 class="title">Question/Answer</h3>
+				<div id="right-content"></div>
+			</td>
+
+		</tr>
+	</table>
+
+</div>
+<div id="input-forms">
+
+	<div class="row">
+		<div class="col-sm-6">
+			<form class="form-inline" id="form-for-grades">
+				<h3 class="title">Add Grades</h3>
+					<div class="form-group">
+						<label for="gname" >Grade Name</label>
+						<input class="form-control" type="text" id="gname" value="">
+					</div>
+					<input class="form-control btn btn-primary" type="submit" id="add_grades" value="Submit">
+			</form>
+		</div>
+		<div class="col-sm-6">
+			<form class="form-inline" id="form-for-subject">
+				<h3 class="title">Add Subject</h3>
+				<select id="gradelist" class="form-control">
+					<option class="form-control" value="">Select Grade Name</option>
+				</select>
+				<div class="form-group">
+					<label for="sname" >Subject Name</label>
+					<input class="form-control" type="text" id="sname" value="">
+				</div>
+				<input class="form-control btn btn-primary" type="submit" id="add_subject" value="Add">
+			</form>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-6">
+			<form class="form-horizontal" id="form-for-chapter">
+				<h3 class="title">Add Chapter</h3>
+				<div class="form-group">
+					<label for="sname" control-label="col-sm-5">Subject Name</label>
+					<div class="col-sm-7">
+						<select class="form-control" id="subjectlist">
+							<option class="form-control" value="">Select Subject Name</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="cname" control-label="col-sm-5">Chapter Name</label>
+					<div class="col-sm-7">
+						<input class="form-control" type="text" id="cname" value="">
+					</div>
+				</div>
+				<div class="col-sm-offset-5">
+					<input class="form-control btn btn-primary" type="submit" id="add_chapter" value="Add Chapter">
+				</div>
+			</form>
+		</div>
+		<div class="col-sm-6">
+			<form class="form-horizontal" id="form-for-qa">
+				<h3 class="title">Add Question/Answer</h3>
+				<div class="form-group">
+					<label for="cname" control-label="col-sm-5">Chapter Name</label>
+					<div class="col-sm-7">
+						<select class="form-control" id="chapterlist">
+							<option class="form-control" value="">Select Chapter Name</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="que" control-label="col-sm-5">Question</label>
+					<div class="col-sm-7">
+						<input class="form-control" type="text" id="que" value="">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="ans" control-label="col-sm-5">Answer</label>
+					<div class="col-sm-7">
+						<input class="form-control" type="text" id="ans" value="">
+					</div>
+				</div>
+				<div class="col-sm-offset-5">
+					<input class="form-control btn btn-primary" type="submit" id="add_qa" value="Submit">
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>
